@@ -1,4 +1,6 @@
 (function() {
+  const STORAGE_KEY = "cookieClickerSave";
+
   let cookies = 0;
   let clickPower = 1;
   let autoRate = 0;
@@ -32,6 +34,38 @@
     }
   }
 
+  function saveGame() {
+    try {
+      const state = {
+        cookies,
+        clickPower,
+        autoRate,
+        clickUpgradeCost,
+        autoUpgradeCost
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    } catch (error) {
+      console.log("Save failed:", error);
+    }
+  }
+
+  function loadGame() {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (!saved) return;
+
+      const parsed = JSON.parse(saved);
+
+      if (typeof parsed.cookies === "number") cookies = parsed.cookies;
+      if (typeof parsed.clickPower === "number") clickPower = parsed.clickPower;
+      if (typeof parsed.autoRate === "number") autoRate = parsed.autoRate;
+      if (typeof parsed.clickUpgradeCost === "number") clickUpgradeCost = parsed.clickUpgradeCost;
+      if (typeof parsed.autoUpgradeCost === "number") autoUpgradeCost = parsed.autoUpgradeCost;
+    } catch (error) {
+      console.log("Load failed:", error);
+    }
+  }
+
   function updateUI() {
     const formattedCookies = formatNumber(cookies);
     scoreDisplay.textContent = formattedCookies;
@@ -50,6 +84,8 @@
 
     upgradeClickBtn.disabled = cookies < clickUpgradeCost;
     upgradeAutoBtn.disabled = cookies < autoUpgradeCost;
+
+    saveGame();
   }
 
   function addCookies(amount) {
@@ -63,19 +99,23 @@
 
   function buyClickUpgrade() {
     if (cookies < clickUpgradeCost) return;
+
     cookies -= clickUpgradeCost;
     clickPower += CLICK_POWER_STEP;
     clickUpgradeCost = Math.round(clickUpgradeCost * 1.65);
     if (clickUpgradeCost < 2) clickUpgradeCost = 2;
+
     updateUI();
   }
 
   function buyAutoUpgrade() {
     if (cookies < autoUpgradeCost) return;
+
     cookies -= autoUpgradeCost;
     autoRate += AUTO_RATE_STEP;
     autoUpgradeCost = Math.round(autoUpgradeCost * 1.85);
     if (autoUpgradeCost < 5) autoUpgradeCost = 5;
+
     updateUI();
   }
 
@@ -85,6 +125,8 @@
     autoRate = 0;
     clickUpgradeCost = 15;
     autoUpgradeCost = 30;
+
+    localStorage.removeItem(STORAGE_KEY);
     updateUI();
   }
 
@@ -108,7 +150,7 @@
     }
   });
 
+  loadGame();
   setInterval(autoClickTick, 1000);
-
   updateUI();
 })();
