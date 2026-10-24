@@ -1,6 +1,4 @@
-document.getElementById("clickButton").addEventListener("click", function() {
-  alert("Clicked!");
-});(function() {
+(function() {
   let cookies = 0;
   let clickPower = 1;
   let autoRate = 0;
@@ -74,4 +72,43 @@ document.getElementById("clickButton").addEventListener("click", function() {
 
   function buyAutoUpgrade() {
     if (cookies < autoUpgradeCost) return;
-    cookies -= autoUpgrade
+    cookies -= autoUpgradeCost;
+    autoRate += AUTO_RATE_STEP;
+    autoUpgradeCost = Math.round(autoUpgradeCost * 1.85);
+    if (autoUpgradeCost < 5) autoUpgradeCost = 5;
+    updateUI();
+  }
+
+  function resetGame() {
+    cookies = 0;
+    clickPower = 1;
+    autoRate = 0;
+    clickUpgradeCost = 15;
+    autoUpgradeCost = 30;
+    updateUI();
+  }
+
+  function autoClickTick() {
+    if (autoRate > 0) {
+      addCookies(autoRate);
+    }
+  }
+
+  clickButton.addEventListener('click', handleClick);
+
+  upgradeClickBtn.addEventListener('click', buyClickUpgrade);
+  upgradeAutoBtn.addEventListener('click', buyAutoUpgrade);
+
+  resetButton.addEventListener('click', resetGame);
+
+  clickButton.addEventListener('keydown', (e) => {
+    if (e.key === ' ' || e.key === 'Enter') {
+      e.preventDefault();
+      handleClick();
+    }
+  });
+
+  setInterval(autoClickTick, 1000);
+
+  updateUI();
+})();
